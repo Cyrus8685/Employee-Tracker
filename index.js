@@ -1,14 +1,9 @@
 
 // Variable Definitions & Dependencies
 const inquirer = require('inquirer');
-const db = require('./db/connection');
+const client = require('./db/connection');
 
 // Start server after DB connection
-db.connect(err => {
-    if (err) throw err;
-    console.log('Database connected.');
-    employee_tracker();
-});
 
 var employee_tracker = function () {
     inquirer.prompt([{
@@ -261,3 +256,5 @@ var employee_tracker = function () {
         }
     })
 };
+
+try { client.connect(); console.log('Connected to PostgreSQL database!'); employee_tracker(); } catch (err) { console.error('Error connecting to the database:', err); }
