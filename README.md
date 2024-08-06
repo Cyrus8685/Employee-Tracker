@@ -25,7 +25,7 @@ Ran into issue with node where it would not connnect to local database. Reviewed
 
 GitHub Repository Link: https://github.com/Cyrus8685/Employee-Tracker
 
-Git Hub Deployed Application Link: cyrus8685.github.io/Employee-Tracker/
+Git Hub Deployed Application Link: https://cyrus8685.github.io/Employee-Tracker/)
 
 Demonstration Video:
 
