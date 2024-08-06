@@ -1,5 +1,13 @@
-const { Client } = require('pg');
- 
-const client = new Client({ user: 'root', host: 'localhost', database: 'employee_tracker_db', password: 'TestPassword1234', port: '5432', });
+const { Sequelize } = require("sequelize");
+
+const db = new Sequelize({ user: 'postgres', host: 'localhost', database: 'PostgreSQL 16', password: 'Eternal1', port: '5432',multipleStatements: true,statement_timeout: 10000,    dialect: "postgres",
+    dialectOptions: {
+      ssl: {
+        require: true, // This will help you. But you will see nwe error
+        rejectUnauthorized: false // This line will fix new error
+      }
+    },}
     
-    module.exports = client
+);
+    
+    module.exports = db

@@ -1,7 +1,8 @@
 
 // Variable Definitions & Dependencies
 const inquirer = require('inquirer');
-const client = require('./db/connection');
+const db = require('./db/connection');
+const Employee = require('./db/schema')(db);
 
 // Start server after DB connection
 
@@ -15,22 +16,25 @@ var employee_tracker = function () {
     }]).then((answers) => {
         // Views the Department Table in the Database
         if (answers.prompt === 'View All Department') {
-            db.query(`SELECT * FROM department`, (err, result) => {
+            console.log("Madeit", db)
+            Employee.findAll({FROM : "department"}, (err, result) => {
                 if (err) throw err;
                 console.log("Viewing All Departments: ");
                 console.table(result);
                 employee_tracker();
             });
         } else if (answers.prompt === 'View All Roles') {
+            console.log("Madeit")
             db.query(`SELECT * FROM role`, (err, result) => {
+
                 if (err) throw err;
                 console.log("Viewing All Roles: ");
                 console.table(result);
                 employee_tracker();
             });
         } else if (answers.prompt === 'View All Employees') {
-            db.query(`SELECT * FROM employee`, (err, result) => {
-                if (err) throw err;
+            db.query(`SELECT * FROM employee`, (result) => {
+                console.log("Madeit")
                 console.log("Viewing All Employees: ");
                 console.table(result);
                 employee_tracker();
@@ -50,6 +54,7 @@ var employee_tracker = function () {
                     }
                 }
             }]).then((answers) => {
+                console.log("Madeit")
                 db.query(`INSERT INTO department (name) VALUES (?)`, [answers.department], (err, result) => {
                     if (err) throw err;
                     console.log(`Added ${answers.department} to the database.`)
@@ -57,6 +62,7 @@ var employee_tracker = function () {
                 });
             })
         } else if (answers.prompt === 'Add A Role') {
+            console.log("Madeit")
             // Beginning with the database so that we may acquire the departments for the choice
             db.query(`SELECT * FROM department`, (err, result) => {
                 if (err) throw err;
@@ -110,7 +116,7 @@ var employee_tracker = function () {
                             var department = result[i];
                         }
                     }
-
+                    console.log("Madeit")
                     db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [answers.role, answers.salary, department.id], (err, result) => {
                         if (err) throw err;
                         console.log(`Added ${answers.role} to the database.`)
@@ -120,6 +126,7 @@ var employee_tracker = function () {
             });
         } else if (answers.prompt === 'Add An Employee') {
             // Calling the database to acquire the roles and managers
+            console.log("Madeit")
             db.query(`SELECT * FROM employee, role`, (err, result) => {
                 if (err) throw err;
 
@@ -187,7 +194,7 @@ var employee_tracker = function () {
                             var role = result[i];
                         }
                     }
-
+                    console.log("Madeit")
                     db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [answers.firstName, answers.lastName, role.id, answers.manager.id], (err, result) => {
                         if (err) throw err;
                         console.log(`Added ${answers.firstName} ${answers.lastName} to the database.`)
@@ -197,6 +204,7 @@ var employee_tracker = function () {
             });
         } else if (answers.prompt === 'Update An Employee Role') {
             // Calling the database to acquire the roles and managers
+            console.log("Madeit")
             db.query(`SELECT * FROM employee, role`, (err, result) => {
                 if (err) throw err;
 
@@ -242,7 +250,7 @@ var employee_tracker = function () {
                             var role = result[i];
                         }
                     }
-
+                    console.log("Madeit")
                     db.query(`UPDATE employee SET ? WHERE ?`, [{role_id: role}, {last_name: name}], (err, result) => {
                         if (err) throw err;
                         console.log(`Updated ${answers.employee} role to the database.`)
@@ -257,4 +265,17 @@ var employee_tracker = function () {
     })
 };
 
-try { client.connect(); console.log('Connected to PostgreSQL database!'); employee_tracker(); } catch (err) { console.error('Error connecting to the database:', err); }
+console.log(db);
+
+try { db.sync(); console.log('Connected to PostgreSQL database!'); 
+    employee_tracker(); } 
+    catch (err) 
+    { console.error('Error connecting to the database:', err); }
+
+    db.query(`SELECT * FROM role`, (err, result) => {
+      
+        if (err) throw err;
+        console.log("Viewing All Roles: ");
+        console.table(result);
+        employee_tracker();
+    });
