@@ -1,30 +1,25 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
-module.exports = function (sequelize) {
-    const Employee = sequelize.define(
-        "Employee",
-        {
-            department: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true
-            },
-            role: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true
-            },
-            employee: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: true
-            },
+// Option 1: Passing a connection URI
+const db = new Sequelize('postgres://test01:Testing1234@localhost:5432/employee_tracker_db') // Example for postgres
 
-            },
-            {
-                timestamps: false
-            }
-        );
-        return Employee;
-        
-        };
+ db.query(`
+    CREATE TABLE department (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(30)
+    );
+    
+    CREATE TABLE role (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(30),
+        salary DECIMAL,
+        department_id INTEGER
+    );
+    
+    CREATE TABLE employee (
+        id SERIAL PRIMARY KEY,
+        first_name VARCHAR(30) NOT NULL,
+        last_name VARCHAR(30) NOT NULL,
+        role_id INTEGER,
+        manager_name VARCHAR(30)
+    );`);

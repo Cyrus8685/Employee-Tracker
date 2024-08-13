@@ -1,12 +1,11 @@
 
 // Variable Definitions & Dependencies
 const inquirer = require('inquirer');
-const db = require('./db/connection');
-const Employee = require('./db/schema')(db);
+const db = require('./config/connection');
 
 // Start server after DB connection
 
-var employee_tracker = function () {
+var employee_tracker = async function () {
     inquirer.prompt([{
         // Begin Command Line
         type: 'list',
@@ -14,29 +13,27 @@ var employee_tracker = function () {
         message: 'What would you like to do?',
         choices: ['View All Department', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Update An Employee Role', 'Log Out']
     }]).then((answers) => {
+        console.log(answers.prompt);
         // Views the Department Table in the Database
         if (answers.prompt === 'View All Department') {
-            console.log("Madeit", db)
-            Employee.findAll({FROM : "department"}, (err, result) => {
+            db.query(`SELECT * FROM department`, (err, result) => {
                 if (err) throw err;
                 console.log("Viewing All Departments: ");
-                console.table(result);
+                console.table(result.rows);
                 employee_tracker();
             });
         } else if (answers.prompt === 'View All Roles') {
-            console.log("Madeit")
             db.query(`SELECT * FROM role`, (err, result) => {
-
-                if (err) throw err;
+                 if (err) throw err;
                 console.log("Viewing All Roles: ");
-                console.table(result);
+                console.table(result.rows);
                 employee_tracker();
             });
         } else if (answers.prompt === 'View All Employees') {
-            db.query(`SELECT * FROM employee`, (result) => {
-                console.log("Madeit")
+            db.query(`SELECT * FROM employee`, (err, result) => {
+                if (err) throw err;
                 console.log("Viewing All Employees: ");
-                console.table(result);
+                console.table(result.rows);
                 employee_tracker();
             });
         } else if (answers.prompt === 'Add A Department') {
@@ -44,7 +41,7 @@ var employee_tracker = function () {
                 // Adding a Department
                 type: 'input',
                 name: 'department',
-                message: 'What is the name of the dpeartment?',
+                message: 'What is the name of the department?',
                 validate: departmentInput => {
                     if (departmentInput) {
                         return true;
@@ -54,20 +51,18 @@ var employee_tracker = function () {
                     }
                 }
             }]).then((answers) => {
-                console.log("Madeit")
-                db.query(`INSERT INTO department (name) VALUES (?)`, [answers.department], (err, result) => {
+                console.log(answers.department);
+                db.query(`INSERT INTO department (name) VALUES ('${answers.department}');`, (err, result) => {
                     if (err) throw err;
                     console.log(`Added ${answers.department} to the database.`)
                     employee_tracker();
                 });
             })
         } else if (answers.prompt === 'Add A Role') {
-            console.log("Madeit")
             // Beginning with the database so that we may acquire the departments for the choice
             db.query(`SELECT * FROM department`, (err, result) => {
                 if (err) throw err;
-
-                inquirer.prompt([
+               inquirer.prompt([
                     {
                         // Adding A Role
                         type: 'input',
@@ -102,22 +97,24 @@ var employee_tracker = function () {
                         name: 'department',
                         message: 'Which department does the role belong to?',
                         choices: () => {
+                            console.log(result);
                             var array = [];
-                            for (var i = 0; i < result.length; i++) {
-                                array.push(result[i].name);
+                            for (var i = 0; i < result.rows.length; i++) {
+                                array.push(result.rows[i].name);
                             }
                             return array;
                         }
                     }
                 ]).then((answers) => {
                     // Comparing the result and storing it into the variable
-                    for (var i = 0; i < result.length; i++) {
-                        if (result[i].name === answers.department) {
-                            var department = result[i];
+                    for (var i = 0; i < result.rows.length; i++) {
+                        if (result.rows[i].name === answers.department) {
+                            var departmentId = result.rows[i].id;
+                            console.log(departmentId);
                         }
                     }
-                    console.log("Madeit")
-                    db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [answers.role, answers.salary, department.id], (err, result) => {
+                    console.log(answers.role, answers.salary, departmentId);
+                    db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${answers.role}', '${answers.salary}', '${departmentId}');`, (err, result) => {
                         if (err) throw err;
                         console.log(`Added ${answers.role} to the database.`)
                         employee_tracker();
@@ -126,7 +123,6 @@ var employee_tracker = function () {
             });
         } else if (answers.prompt === 'Add An Employee') {
             // Calling the database to acquire the roles and managers
-            console.log("Madeit")
             db.query(`SELECT * FROM employee, role`, (err, result) => {
                 if (err) throw err;
 
@@ -166,8 +162,8 @@ var employee_tracker = function () {
                         message: 'What is the employees role?',
                         choices: () => {
                             var array = [];
-                            for (var i = 0; i < result.length; i++) {
-                                array.push(result[i].title);
+                            for (var i = 0; i < result.rows.length; i++) {
+                                array.push(result.rows[i].title);
                             }
                             var newArray = [...new Set(array)];
                             return newArray;
@@ -175,27 +171,28 @@ var employee_tracker = function () {
                     },
                     {
                         // Adding Employee Manager
-                        type: 'input',
+                        type: 'list',
                         name: 'manager',
                         message: 'Who is the employees manager?',
-                        validate: managerInput => {
-                            if (managerInput) {
-                                return true;
-                            } else {
-                                console.log('Please Add A Manager!');
-                                return false;
+                        choices: () => {
+                            var array = [];
+                            for (var i = 0; i < result.rows.length; i++) {
+                                array.push(result.rows[i].manager_name);
                             }
+                            var managerArray = [...new Set(array)];
+                            return managerArray;
                         }
-                    }
+                    },
                 ]).then((answers) => {
+
                     // Comparing the result and storing it into the variable
-                    for (var i = 0; i < result.length; i++) {
-                        if (result[i].title === answers.role) {
-                            var role = result[i];
+                    for (var i = 0; i < result.rows.length; i++) {
+                        if (result.rows[i].title === answers.role) {
+                            var roleId = result.rows[i].role_id;
+                            console.log(roleId);
                         }
                     }
-                    console.log("Madeit")
-                    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [answers.firstName, answers.lastName, role.id, answers.manager.id], (err, result) => {
+                    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_name) VALUES ('${answers.firstName}','${answers.lastName}','${roleId}', '${answers.manager}');`, (err, result) => {
                         if (err) throw err;
                         console.log(`Added ${answers.firstName} ${answers.lastName} to the database.`)
                         employee_tracker();
@@ -204,10 +201,9 @@ var employee_tracker = function () {
             });
         } else if (answers.prompt === 'Update An Employee Role') {
             // Calling the database to acquire the roles and managers
-            console.log("Madeit")
             db.query(`SELECT * FROM employee, role`, (err, result) => {
                 if (err) throw err;
-
+                console.log(result.rows)
                 inquirer.prompt([
                     {
                         // Choose an Employee to Update
@@ -216,8 +212,8 @@ var employee_tracker = function () {
                         message: 'Which employees role do you want to update?',
                         choices: () => {
                             var array = [];
-                            for (var i = 0; i < result.length; i++) {
-                                array.push(result[i].last_name);
+                            for (var i = 0; i < result.rows.length; i++) {
+                                array.push(result.rows[i].last_name);
                             }
                             var employeeArray = [...new Set(array)];
                             return employeeArray;
@@ -230,28 +226,28 @@ var employee_tracker = function () {
                         message: 'What is their new role?',
                         choices: () => {
                             var array = [];
-                            for (var i = 0; i < result.length; i++) {
-                                array.push(result[i].title);
+                            for (var i = 0; i < result.rows.length; i++) {
+                                array.push(result.rows[i].title);
                             }
                             var newArray = [...new Set(array)];
                             return newArray;
                         }
                     }
                 ]).then((answers) => {
-                    // Comparing the result and storing it into the variable
-                    for (var i = 0; i < result.length; i++) {
-                        if (result[i].last_name === answers.employee) {
-                            var name = result[i];
-                        }
+                    const name = answers.employee;
+                    var array = [];
+                    for (var i = 0; i < result.rows.length; i++) {
+                        array.push(result.rows[i].last_name);
                     }
+                    var employeeArray = [...new Set(array)];
 
-                    for (var i = 0; i < result.length; i++) {
-                        if (result[i].title === answers.role) {
-                            var role = result[i];
+                    for (var i = 0; i < employeeArray.length; i++) {
+                        if (result.rows[i].last_name === answers.employee) {
+                            var roleId = (result.rows[i].role_id);
+                            console.log(roleId);
                         }
                     }
-                    console.log("Madeit")
-                    db.query(`UPDATE employee SET ? WHERE ?`, [{role_id: role}, {last_name: name}], (err, result) => {
+                    db.query(`UPDATE employee SET role_id = ${roleId} WHERE last_name = '${name}';`, (err, result) => {
                         if (err) throw err;
                         console.log(`Updated ${answers.employee} role to the database.`)
                         employee_tracker();
@@ -265,17 +261,7 @@ var employee_tracker = function () {
     })
 };
 
-console.log(db);
-
-try { db.sync(); console.log('Connected to PostgreSQL database!'); 
+try { db.connect(); console.log('Connected to PostgreSQL database!'); 
     employee_tracker(); } 
     catch (err) 
     { console.error('Error connecting to the database:', err); }
-
-    db.query(`SELECT * FROM role`, (err, result) => {
-      
-        if (err) throw err;
-        console.log("Viewing All Roles: ");
-        console.table(result);
-        employee_tracker();
-    });
