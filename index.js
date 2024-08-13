@@ -13,7 +13,6 @@ var employee_tracker = async function () {
         message: 'What would you like to do?',
         choices: ['View All Department', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Update An Employee Role', 'Log Out']
     }]).then((answers) => {
-        console.log(answers.prompt);
         // Views the Department Table in the Database
         if (answers.prompt === 'View All Department') {
             db.query(`SELECT * FROM department`, (err, result) => {
@@ -51,7 +50,6 @@ var employee_tracker = async function () {
                     }
                 }
             }]).then((answers) => {
-                console.log(answers.department);
                 db.query(`INSERT INTO department (name) VALUES ('${answers.department}');`, (err, result) => {
                     if (err) throw err;
                     console.log(`Added ${answers.department} to the database.`)
@@ -97,7 +95,6 @@ var employee_tracker = async function () {
                         name: 'department',
                         message: 'Which department does the role belong to?',
                         choices: () => {
-                            console.log(result);
                             var array = [];
                             for (var i = 0; i < result.rows.length; i++) {
                                 array.push(result.rows[i].name);
@@ -110,10 +107,8 @@ var employee_tracker = async function () {
                     for (var i = 0; i < result.rows.length; i++) {
                         if (result.rows[i].name === answers.department) {
                             var departmentId = result.rows[i].id;
-                            console.log(departmentId);
                         }
                     }
-                    console.log(answers.role, answers.salary, departmentId);
                     db.query(`INSERT INTO role (title, salary, department_id) VALUES ('${answers.role}', '${answers.salary}', '${departmentId}');`, (err, result) => {
                         if (err) throw err;
                         console.log(`Added ${answers.role} to the database.`)
@@ -125,7 +120,6 @@ var employee_tracker = async function () {
             // Calling the database to acquire the roles and managers
             db.query(`SELECT * FROM employee, role`, (err, result) => {
                 if (err) throw err;
-
                 inquirer.prompt([
                     {
                         // Adding Employee First Name
@@ -184,12 +178,11 @@ var employee_tracker = async function () {
                         }
                     },
                 ]).then((answers) => {
-
+                       
                     // Comparing the result and storing it into the variable
                     for (var i = 0; i < result.rows.length; i++) {
                         if (result.rows[i].title === answers.role) {
-                            var roleId = result.rows[i].role_id;
-                            console.log(roleId);
+                            var roleId = result.rows[i].id;
                         }
                     }
                     db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_name) VALUES ('${answers.firstName}','${answers.lastName}','${roleId}', '${answers.manager}');`, (err, result) => {
@@ -202,8 +195,8 @@ var employee_tracker = async function () {
         } else if (answers.prompt === 'Update An Employee Role') {
             // Calling the database to acquire the roles and managers
             db.query(`SELECT * FROM employee, role`, (err, result) => {
+
                 if (err) throw err;
-                console.log(result.rows)
                 inquirer.prompt([
                     {
                         // Choose an Employee to Update
@@ -235,16 +228,10 @@ var employee_tracker = async function () {
                     }
                 ]).then((answers) => {
                     const name = answers.employee;
-                    var array = [];
-                    for (var i = 0; i < result.rows.length; i++) {
-                        array.push(result.rows[i].last_name);
-                    }
-                    var employeeArray = [...new Set(array)];
 
-                    for (var i = 0; i < employeeArray.length; i++) {
-                        if (result.rows[i].last_name === answers.employee) {
-                            var roleId = (result.rows[i].role_id);
-                            console.log(roleId);
+                    for (var i = 0; i < result.rows.length; i++) {
+                        if (result.rows[i].title === answers.role) {
+                            var roleId = (result.rows[i].id);
                         }
                     }
                     db.query(`UPDATE employee SET role_id = ${roleId} WHERE last_name = '${name}';`, (err, result) => {
