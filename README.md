@@ -28,6 +28,5 @@ GitHub Repository Link: https://github.com/Cyrus8685/Employee-Tracker
 
 Git Hub Deployed Application Link: https://cyrus8685.github.io/Employee-Tracker/)
 
-Demonstration Video:
-file:///var/folders/8d/xp79xwz56wxdflt1mcjb2c980000gn/T/2024-08-13_02-48-09.mp4
+Demonstration Video: file:///var/folders/8d/xp79xwz56wxdflt1mcjb2c980000gn/T/2024-08-13_02-48-09.mp4
 
