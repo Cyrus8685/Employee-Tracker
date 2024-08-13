@@ -19,14 +19,15 @@ The view all options will dispay all rows of current data listed under the corre
 
 The Add Options will let add new input to the corresponding selected table name.
 
+The Update An Employee Role Option will let you Update a Specific Employees Role.
+
 The Logout Option will terminate the app and log out the user from the databse.
 
-Ran into issue with node where it would not connnect to local database. Reviewed issue with T.A. could not determinse cause. Was advised to submit as is.
 
 GitHub Repository Link: https://github.com/Cyrus8685/Employee-Tracker
 
 Git Hub Deployed Application Link: https://cyrus8685.github.io/Employee-Tracker/)
 
 Demonstration Video:
+file:///var/folders/8d/xp79xwz56wxdflt1mcjb2c980000gn/T/2024-08-13_02-48-09.mp4
 
-https://github.com/user-attachments/assets/3c6c1286-66ed-4fd0-a4dd-90519aee1e9c
